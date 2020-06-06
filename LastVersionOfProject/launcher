@@ -1,0 +1,3 @@
+#! /bin/bash
+
+g++ ofstr.h structDfs.h dfs2.h define.h dfs2.cpp -lpthread -std=c++11

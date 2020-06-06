@@ -1,0 +1,192 @@
+#ifndef DEFINE_OF_CLASS
+#define DEFINE_OF_CLASS
+#include "dfs2.h"
+
+	algo::algo(string str) {
+	
+	    int** masHelp;
+	    masHelp = ofstr(str, sizeOfMatrix);
+	    int helpForCin = 0;
+	    for(int i=0;i<sizeOfMatrix;i++) {
+		for(int j=0;j<sizeOfMatrix;j++)
+		    if(masHelp[i][j] > 0) {
+			helpForCin++;
+		    }
+	    }
+
+	    this->n = sizeOfMatrix;
+	    this->m = helpForCin;
+	    this->mas = new edge[helpForCin];
+	    this->mark = new bool[sizeOfMatrix];
+	    this->q_o = new countOut[sizeOfMatrix];
+	    this->count = 0;
+	    this->count_out = 0;
+	
+	    int helpForCin1 = 0;
+	    for(int i=0;i<sizeOfMatrix;i++) {
+		for(int j=0;j<sizeOfMatrix;j++)
+		    if(masHelp[i][j] > 0) {
+			mas[helpForCin1].from = i;
+			mas[helpForCin1].in = j;
+			helpForCin1++;
+		    }
+	    }
+	    
+	    for(int i=0; i<sizeOfMatrix; i++) {
+		q_o[i].num = i;
+	    }
+	    for(int i=0; i<sizeOfMatrix; i++) {
+		mark[i]=true;
+	    }
+	    
+	    for(int i=0;i<sizeOfMatrix;i++)
+		delete[] masHelp[i];
+	    delete[] masHelp;
+	}
+	
+	algo::~algo() {
+
+	    //delete[] this->mas;
+	    //delete[] this->mark;
+	    //delete[] this->q_o;
+
+	}
+
+	void algo::print_edge() const{
+	    for(int i=0; i<m; i++)
+		cout << mas[i].in+1 << ' ';
+	    cout << '\n';
+	}
+
+	int algo::get_num() {
+	    return q_o[count_out++].num;
+	}
+
+	void algo::print_out() const{
+	    cout << '\n';
+	    for(int i=0; i<n; i++)
+		cout << "\nNum of vertex " << q_o[i].num+1 << " queue out " << q_o[i].out+1 << '\n';
+	    cout << '\n';
+	}
+	
+	void algo::qsort(int l, int r) {
+	    int i = l;
+	    int j = r;
+	    int cmp = mas[l].in;
+	    while (i <= j) {
+			while (mas[i].in < cmp) i++;
+			while (mas[j].in > cmp) j--;
+			if (i <= j) {
+				swap(mas[i].in, mas[j].in);
+				swap(mas[i].from, mas[j].from);
+				i++;
+				j--;
+			}
+	    }
+	    if (l < j) qsort(l, j);
+	    if (r > i) qsort(i, r);
+	}
+	
+	bool algo::mark_num(int num) const{
+	    return mark[num];
+	}
+
+	void algo::qsort_out(int l, int r) {
+	    int i = l;
+	    int j = r;
+	    int cmp = q_o[l].out;
+	    while (i <= j) {
+			while (q_o[i].out > cmp) i++;
+			while (q_o[j].out < cmp) j--;
+			if (i <= j) {
+				swap(q_o[i].out, q_o[j].out);
+				swap(q_o[i].num, q_o[j].num);
+				i++;
+				j--;
+			}
+	    }
+
+		if (l < j) qsort(l, j);
+	    if (r > i) qsort(i, r);
+	}
+
+	void algo::reboot() {
+	    for(int i=0; i<n; i++)
+		mark[i] = true;
+	}
+
+	void algo::dfs(int u) {
+	    mark[u] = false;
+	    cout << "IN " << u+1 << "   ";
+	    for(int i=0; i<m; i++) {
+	        if((mas[i].from == u) && (mark[mas[i].in])) {
+				dfs(mas[i].in);
+			}
+	    }
+		cout << "OUT " << u+1 << "   ";
+	    q_o[u].out = count++;
+	}
+	
+	int algo::search(int u) {
+	    for(int i=0; i<n; i++) {
+		if(q_o[i].num == u)
+		    return q_o[i].out;
+	    }
+	}
+	
+	void algo::dfs_out(int u) {
+	    mark[u] = false;
+	    cout << u+1 << ' ';
+	    for(int i=0; i<m; i++) {
+	        if((mas[i].in == u) && (mark[mas[i].from]) && (algo::search(u) > algo::search(mas[i].from))) {
+				algo::dfs_out(mas[i].from);
+			}
+	    }
+	}
+
+	void algo::merge(int l1, int r1, int l2, int r2) {
+	    int size = r1 - l1 + r2 - l2 + 2;
+	    int i = l1;
+	    int j = l2;
+	    int k = 0;
+	    edge* m = new edge[size];
+	    while ((r1 - i >= 0) && (r2 - j >= 0)) {
+		if (mas[i].in < mas[j].in) {
+		    m[k++] = mas[i++];
+		}
+		else {
+		    m[k++] = mas[j++];
+		}
+	    }
+	    while (r1 - i >= 0) {
+		m[k++] = mas[i++];
+	    }
+	    while (r2 - j >= 0) {
+		m[k++] = mas[j++];
+	    }
+	    for (int i = 0; i < size; i++)
+		mas[l1+i] = m[i];
+	}
+
+
+
+	int algo::count_of_edge() const{
+	    return this->m;
+	}
+
+	void sort_out() {
+	    for(int i=n-1; i>0; i--) {
+		for(int j=0; j<i; j++) {
+		    if(q_o[j].out < q_o[j+1].out) {
+			swap(q_o[j].out, q_o[j+1].out);
+			swap(q_o[j].num, q_o[j+1].num);
+		    }
+		}
+	    }
+        }
+
+	int algo::count_of_vertex() const{
+	    return this->n;
+	}
+
+#endif
